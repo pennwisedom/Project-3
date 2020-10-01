@@ -12,6 +12,7 @@ class Listing(models.Model):
     description = models.CharField(max_length=256)
     category = models.CharField(max_length=64)
     image = models.CharField(max_length=256, blank=True)
+    end = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.id}: {self.title} is an Auction in the {self.category} category, created by {self.user}."

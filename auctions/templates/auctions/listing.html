@@ -8,17 +8,39 @@
     
     <h3>{{ listing.title }}</h3> <p>in {{ listing.category}} </p>
         {% if listing.image %}
-            <img src="{{ list.image }}" width="200" height="300">
+            <img src="{{ listing.image }}" width="200" height="200">
         {% endif %}
+
+    {% if listing.user == request.user and not end %}
+    <form action="{% url 'listing' listing.id %}" method="post">
+        {% csrf_token %}
+        <input type="submit" name="endauction" value="End Auction">
+    </form>
+    {% endif %}
+
+    {% if end and listing.bids.latest.user == request.user %}
+        <strong>You have won this auction!</strong><br>
+    {% endif %}
     
-    
+    {% if end %}{{ end }}{% endif %}
     <div id="info">
         <br>
         <span><strong>Description: </strong>{{ listing.description }}</span> 
         <br> 
-        <span>The current bid is ${{ listing.bids.latest.bid }} made by {{ listing.bids.latest.user }}.</span>  
+        {% if not end %}
+            {% if not listing.bids.latest.bid %}
+                <span>There are no bids yet.</span>
+            {% else %}
+                <span>The current bid is ${{ listing.bids.latest.bid }} made by {{ listing.bids.latest.user }}.</span>
+                <br>
+                <span>There have been {{ listing.bids.all.count }} bids.</span>
+            {% endif %}    
+
+        {% else %}
+        <span>{{ listing.bids.latest.user }} won the auction with a bid of ${{ listing.bids.latest.bid }}</span>
         <br>
-        <span>There have been {{ listing.bids.all.count }} bids.</span>
+        <span>There were {{ listing.bids.all.count }} bids.</span>
+        {% endif %}
     </div>    
 
     <div id="comments">
@@ -34,11 +56,15 @@
         </ul>
     </div>
     {% if message %}{{ message }}{% endif %}
+    {% if not end %}
     <form action="{% url 'listing' listing.id %}" method="post">
         {% csrf_token %}
         {{ form }}
         <input type="submit" name="bidtry" value=Submit>
     </form>
+    {% endif %}
+    
+    {% if not end %}
     <br>
     {% if commentmessage %}{{ commentmessage }}{% endif %}
     <form action="{% url 'listing' listing.id %}" method="post">
@@ -46,6 +72,7 @@
         {{ commentform }}
         <input type="submit" name="comment" value=Comment>
     </form>
+    {% endif %}
 
 
 {% endblock %}

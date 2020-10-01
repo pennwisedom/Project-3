@@ -9,8 +9,8 @@
             {% for list in listing %}
                 <li><a href="{% url 'listing' list.id %}">{{ list.title }}.</a> Current bid is ${{ list.bids.latest }}</li>
                 <span>{{ list.description }}</span>
-                {% if list.image %}
-                <img src="{{ list.image }}" width="200" height="300">
+                {% if list.image %} <br>
+                <img src="{{ list.image }}" width="200" height="200">
                 {% endif%}
             {% endfor %}
         </ul>

@@ -8,6 +8,22 @@ from django.forms import ModelForm
 
 from .models import User, Listing, Bid, Comment
 
+# Class definitions for forms
+class BidForm(ModelForm):
+    class Meta:
+        model = Bid
+        fields = ["bid"]
+
+class CommentForm(ModelForm):
+    class Meta:
+        model = Comment
+        fields = ["text"]
+
+class ListForm(ModelForm):
+    class Meta:
+        model = Listing
+        fields = ["title", "description", "category", "image"]
+
 
 def index(request):
 
@@ -16,7 +32,7 @@ def index(request):
         return render(request, "auctions/index.html", {"message": "Please Log in to see active listings."})
     
     else:
-        return render(request, "auctions/index.html", {"listing": Listing.objects.all()})
+        return render(request, "auctions/index.html", {"listing": Listing.objects.exclude(end=True)})
 
 
 def login_view(request):
@@ -74,27 +90,33 @@ def register(request):
 @login_required
 def listing(request, list_id):
 
-    class BidForm(ModelForm):
-        class Meta:
-            model = Bid
-            fields = ["bid"]
-
-    class CommentForm(ModelForm):
-        class Meta:
-            model = Comment
-            fields = ["text"]
+        # Check to see if auction is over and render appropriate page.
+    if Listing.objects.get(pk=list_id).end == True:
+        return render(request, "auctions/listing.html", {"listing": Listing.objects.get(pk=list_id), 
+    "comments": Comment.objects.filter(listings=list_id), "end": "This auction is over."})
 
     # Make new Bid. Must be higher than previous one.
     if request.method == "POST" and "bidtry" in request.POST:
-        current_bid = Listing.objects.get(pk=list_id).bids.latest().bid
         new_bid = int(request.POST["bid"])
         
+        # First bid
+        if Listing.objects.get(pk=list_id).bids.all().count() == 0:
+           updatebid =  Bid(user=request.user, listing=Listing(list_id), bid=new_bid)
+           updatebid.save()
+           return render(request, "auctions/listing.html", {"listing": Listing.objects.get(pk=list_id), 
+    "comments": Comment.objects.filter(listings=list_id), "form": BidForm(), "message": "Success!", "commentform": CommentForm()})
+    
+        else:
+            current_bid = Listing.objects.get(pk=list_id).bids.latest().bid
+        
+        # Check against current bid
         if current_bid >= new_bid:
             print(f"{new_bid} is lower than {current_bid}")
             
             return render(request, "auctions/listing.html", {"listing": Listing.objects.get(pk=list_id), 
     "comments": Comment.objects.filter(listings=list_id), "form": BidForm(request.POST), "message": "New bid must be higher than the previous bid",
     "commentform": CommentForm()})
+        
         else:
             updatebid = Bid(user=request.user, listing=Listing(list_id), bid=new_bid)
             updatebid.save()
@@ -102,13 +124,34 @@ def listing(request, list_id):
     "comments": Comment.objects.filter(listings=list_id), "form": BidForm(), "message": "Success!", "commentform": CommentForm()})
 
     # Functionality to add comments
-    elif request.method == "POST":
+    elif request.method == "POST" and "comment" in request.POST:
         newcomment = Comment(user=request.user, text=request.POST["text"], listings=Listing(list_id))
         newcomment.save()
         return render(request, "auctions/listing.html", {"listing": Listing.objects.get(pk=list_id), 
     "comments": Comment.objects.filter(listings=list_id), "form": BidForm(), "commentmessage": "Success!", "commentform": CommentForm()})
 
+    # Ending an Auction, updates the value in the Database
+    elif request.method == "POST" and "endauction" in request.POST:
+        over = Listing.objects.get(pk=list_id)
+        over.end = True
+        over.save()
+        return render(request, "auctions/listing.html", {"listing": Listing.objects.get(pk=list_id), 
+    "comments": Comment.objects.filter(listings=list_id), "end": "Auction Ended."})    
+
     # Standard Get request display.
     else:
         return render(request, "auctions/listing.html", {"listing": Listing.objects.get(pk=list_id), 
     "comments": Comment.objects.filter(listings=list_id), "form": BidForm(), "commentform": CommentForm()})
+
+@login_required
+def create(request):
+
+    if request.method == "POST":
+        newlisting = Listing(user=request.user, title=request.POST['title'], description=request.POST['description'],
+        category=request.POST['category'], image=request.POST['image'])
+        newlisting.save()
+        return render(request, "auctions/listing.html", {"listing": Listing.objects.get(pk=newlisting.id), 
+    "comments": Comment.objects.filter(listings=newlisting.id), "form": BidForm(), "commentform": CommentForm()})
+
+    else:
+        return render(request, "auctions/new.html", {"form": ListForm()})
