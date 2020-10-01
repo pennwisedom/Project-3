@@ -2,6 +2,16 @@
 
 {% block body %}
     <h2>Active Listings</h2>
-
-    TODO
+    
+    
+        <ul>
+            {% if message %}{{ message }} {% endif %}
+            {% for list in listing %}
+                <li><a href="{% url 'listing' list.id %}">{{ list.title }}.</a> Current bid is ${{ list.bids.latest }}</li>
+                <span>{{ list.description }}</span>
+                {% if list.image %}
+                <img src="{{ list.image }}" width="200" height="300">
+                {% endif%}
+            {% endfor %}
+        </ul>
 {% endblock %}

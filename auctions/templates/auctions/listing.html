@@ -1,0 +1,51 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}
+    Listing Information
+{% endblock %}
+
+{% block body %}
+    
+    <h3>{{ listing.title }}</h3> <p>in {{ listing.category}} </p>
+        {% if listing.image %}
+            <img src="{{ list.image }}" width="200" height="300">
+        {% endif %}
+    
+    
+    <div id="info">
+        <br>
+        <span><strong>Description: </strong>{{ listing.description }}</span> 
+        <br> 
+        <span>The current bid is ${{ listing.bids.latest.bid }} made by {{ listing.bids.latest.user }}.</span>  
+        <br>
+        <span>There have been {{ listing.bids.all.count }} bids.</span>
+    </div>    
+
+    <div id="comments">
+        <br>
+        <h4>Comments:</h4>
+        <ul>
+            {% if not comments %}
+            There are no comments yet.
+            {% endif %}
+            {% for comment in comments%}
+            <li>{{ comment.text | safe }} By <i>{{ comment.user }}</i></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% if message %}{{ message }}{% endif %}
+    <form action="{% url 'listing' listing.id %}" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" name="bidtry" value=Submit>
+    </form>
+    <br>
+    {% if commentmessage %}{{ commentmessage }}{% endif %}
+    <form action="{% url 'listing' listing.id %}" method="post">
+        {% csrf_token %}
+        {{ commentform }}
+        <input type="submit" name="comment" value=Comment>
+    </form>
+
+
+{% endblock %}

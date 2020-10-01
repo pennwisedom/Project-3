@@ -22,6 +22,9 @@ class Bid(models.Model):
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="bids")
     bid = models.IntegerField()
 
+    class Meta:
+        get_latest_by = "id"
+
     def __str__(self):
         return f"Auction #{self.listing.id} Has a bid of {self.bid}, made by {self.user}."
 
