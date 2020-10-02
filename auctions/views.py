@@ -90,10 +90,17 @@ def register(request):
 @login_required
 def listing(request, list_id):
 
-        # Check to see if auction is over and render appropriate page.
+    # Check to see if auction is over and render appropriate page.
     if Listing.objects.get(pk=list_id).end == True:
         return render(request, "auctions/listing.html", {"listing": Listing.objects.get(pk=list_id), 
     "comments": Comment.objects.filter(listings=list_id), "end": "This auction is over."})
+
+    # Check to see if item is on user's watchlist.
+    if Watchlist.objects.filter(user=request.user, auction=list_id).count() > 0:
+        print("Ran")
+        return render(request, "auctions/listing.html", {"listing": Listing.objects.get(pk=list_id), 
+    "comments": Comment.objects.filter(listings=list_id), "form": BidForm(), "commentform": CommentForm(), "watch": True})
+
 
     # Make new Bid. Must be higher than previous one.
     if request.method == "POST" and "bidtry" in request.POST:
@@ -171,5 +178,22 @@ def category_detail(request, category):
 
 # Displays watchlist, also add and remove items to watchlist.
 @login_required
-def watchlist(request, list_id):
-    return render(request, "auctions/watchlist.html")
+def watchlist(request, list_id=0):
+
+    # Add to watchlist
+    if request.method == "POST" and "watchlistform" in request.POST:
+        watch = Watchlist(user=request.user)
+        watch.save()
+        watch.auction.add(list_id)
+        return render(request, "auctions/listing.html", {"listing": Listing.objects.get(pk=list_id), 
+    "comments": Comment.objects.filter(listings=list_id), "form": BidForm(), "commentform": CommentForm(), "watch": True})
+
+    if request.method == "POST" and "remove" in request.POST:
+        remove = Watchlist.objects.filter(user=request.user, auction=list_id)
+        remove.delete()
+        return render(request, "auctions/listing.html", {"listing": Listing.objects.get(pk=list_id), 
+    "comments": Comment.objects.filter(listings=list_id), "form": BidForm(), "commentform": CommentForm()})
+
+
+    else:
+        return render(request, "auctions/watchlist.html", {"watchlist": Watchlist.objects.filter(user=request.user)})

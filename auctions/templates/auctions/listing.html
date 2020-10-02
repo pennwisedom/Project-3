@@ -74,5 +74,15 @@
     </form>
     {% endif %}
 
-
+{% if not watch %}
+<form action="{% url 'watchlist' listing.id %}" method="post">
+    {% csrf_token %}
+    <input type="submit" name="watchlistform" value="Add to Watchlist">
+</form>
+{% else %}
+<form action="{% url 'watchlist' listing.id %}" method="post">
+    {% csrf_token %}
+    <input type="submit" name="remove" value="Remove from Watchlist">
+</form>
+{% endif %}
 {% endblock %}

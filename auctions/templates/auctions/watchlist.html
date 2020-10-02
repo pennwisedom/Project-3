@@ -5,12 +5,11 @@
     
     
         <ul>
-            
-            {% for list in listing %}
-                <li><a href="{% url 'listing' list.id %}">{{ list.title }}.</a> Current bid is ${{ list.bids.latest }}</li>
+            {% for list in watchlist %}
+                <li><a href="{% url 'listing' list.auction.get.id %}">{{ list.auction.get.title }}.</a></li>
                 <span>{{ list.description }}</span>
                 {% if list.image %} <br>
-                <img src="{{ list.image }}" width="200" height="175">
+                <img src="{{ auction.image }}" width="200" height="175">
                 {% endif%}
             {% endfor %}
         </ul>
