@@ -6,7 +6,7 @@
 
 {% block body %}
     
-    <h3>{{ listing.title }}</h3> <p>in {{ listing.category}} </p>
+    <h3>{{ listing.title }}</h3> <p>in <a href="{% url 'category' listing.category %}">{{ listing.category}}</a> </p>
         {% if listing.image %}
             <img src="{{ listing.image }}" width="200" height="200">
         {% endif %}

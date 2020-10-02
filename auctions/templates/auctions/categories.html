@@ -1,17 +1,29 @@
 {% extends "auctions/layout.html" %}
 
+{% block title %}
+    Categories
+{% endblock %}
+
 {% block body %}
-    <h2>Active Listings</h2>
-    
-    
-        <ul>
-            {% if message %}{{ message }} {% endif %}
-            {% for list in listing %}
+{% if categories %}
+<h2>Categories</h2>
+
+<ul>
+    {% for category in categories %}
+    <li><a href="{% url 'category' category %}">{{ category }}</a></li>
+    {% endfor %}
+</ul>
+{% else %}
+<h2>{{ title }} </h2>
+
+<ul>
+    {% for list in category %}
                 <li><a href="{% url 'listing' list.id %}">{{ list.title }}.</a> Current bid is ${{ list.bids.latest }}</li>
                 <span>{{ list.description }}</span>
                 {% if list.image %} <br>
                 <img src="{{ list.image }}" width="200" height="175">
                 {% endif%}
-            {% endfor %}
-        </ul>
+    {% endfor %}
+</ul>
+{% endif %}
 {% endblock %}

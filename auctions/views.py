@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.forms import ModelForm
 
-from .models import User, Listing, Bid, Comment
+from .models import User, Listing, Bid, Comment, Watchlist
 
 # Class definitions for forms
 class BidForm(ModelForm):
@@ -155,3 +155,21 @@ def create(request):
 
     else:
         return render(request, "auctions/new.html", {"form": ListForm()})
+
+# Display Categories
+@login_required
+def categories(request):
+    
+    #List of acceptable categories
+    categories = ["General", "Toys", "Electronics"]
+    return render(request, "auctions/categories.html", {"categories": categories})
+
+# Details of Category
+@login_required
+def category_detail(request, category):
+    return render(request, "auctions/categories.html", {"title": category, "category": Listing.objects.filter(category=category, end=False)})
+
+# Displays watchlist, also add and remove items to watchlist.
+@login_required
+def watchlist(request, list_id):
+    return render(request, "auctions/watchlist.html")

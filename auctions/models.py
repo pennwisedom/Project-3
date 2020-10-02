@@ -37,3 +37,11 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.user} made a comment on Auction #{self.listings.id}."
+
+# Model for Watchlist Auctions
+class Watchlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="watcher")
+    auction = models.ManyToManyField(Listing, related_name="watched_item")
+
+    def __str__(self):
+        return f"{self.user} is watching Auction #{self.auction.get().id}."
